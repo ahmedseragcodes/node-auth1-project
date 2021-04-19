@@ -1,6 +1,11 @@
-// Require `checkUsernameFree`, `checkUsernameExists` and `checkPasswordLength`
-// middleware functions from `auth-middleware.js`. You will need them here!
+//IMPORTS
+const express = require("express");
+const { checkUsernameFree, checkUsernameExists, checkPasswordLength } = require("./auth-middleware");
+const Users = require("../users/users-model");
+const bcrypt = require("bcryptjs");
 
+//INSTANCE OF ROUTER
+const router = express.Router();
 
 /**
   1 [POST] /api/auth/register { "username": "sue", "password": "1234" }
@@ -25,6 +30,25 @@
   }
  */
 
+  router.post("/register", checkUsernameFree, checkPasswordLength, (req, res, next)=>{
+    
+    const { username, password } = req.body;
+    
+    const hash = bcrypt.hashSync(password, 8);
+
+    const newUser = {
+      username: username,
+      password: hash
+    }
+
+    Users.add(newUser)
+    .then((newestUser)=>{
+      res.status(200).json(newestUser);
+    })
+    .catch((err)=>{
+      next(err);
+    })
+  })
 
 /**
   2 [POST] /api/auth/login { "username": "sue", "password": "1234" }
@@ -41,6 +65,22 @@
     "message": "Invalid credentials"
   }
  */
+
+router.post("/login", checkUsernameExists, async (req, res, next)=>{
+
+const { username, password } = req.body;
+
+const [user] = await Users.findBy(username);
+
+if(user && bcrypt.compareSync(password, user.password)){
+
+  req.session.user = user;
+  res.json({message: `Welcome back ${username}`});
+} else {
+  res.status(401).json({message: "Invalid credentials"});
+}
+
+})
 
 
 /**
@@ -59,5 +99,22 @@
   }
  */
 
+  router.get("/logout", (req, res, next)=>{
+
+    if (req.session.user){
+      req.session.destroy((err)=>{
+        if(err){
+          next({message: "Sorry you can't logout"})
+        } else {
+          res.json({message: "Goodbye"});
+        }
+      })
+    } else {
+      next({message: "Unable to logout because no login exists", status: 404})
+    }
+
+  })
  
 // Don't forget to add the router to the `exports` object so it can be required in other modules
+
+module.exports = router;
