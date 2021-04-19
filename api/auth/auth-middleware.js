@@ -24,12 +24,14 @@ function restricted(req, res, next) {
     "message": "Username taken"
   }
 */
-function checkUsernameFree(req, res, next) {
+async function checkUsernameFree(req, res, next) {
   
   const { username } = req.body;
 
-  if (Users.findBy(username)){
-    res.status(422).json({message: "Username taken"});
+  const [user] = await Users.findBy(username);
+
+  if(user){
+    res.status(422).json({message: "Username taken"})
   } else {
     next();
   }
