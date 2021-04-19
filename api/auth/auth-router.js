@@ -99,6 +99,21 @@ if(user && bcrypt.compareSync(password, user.password)){
   }
  */
 
+  router.get("/logout", (req, res, next)=>{
+
+    if (req.session.user){
+      req.session.destroy((err)=>{
+        if(err){
+          next({message: "Sorry you can't logout"})
+        } else {
+          res.json({message: "Goodbye"});
+        }
+      })
+    } else {
+      next({message: "Unable to logout because no login exists", status: 404})
+    }
+
+  })
  
 // Don't forget to add the router to the `exports` object so it can be required in other modules
 
