@@ -16,7 +16,7 @@ function find() {
 async function findBy(filter) {
 
   const filteredUser = await db("users")
-                        .where({filter})
+                        .where(filter)
 
   return filteredUser[0]
 }
