@@ -6,7 +6,7 @@ const db = require("../../data/db-config");
 function find() {
   
   return db("users")
-          .select("user.user_id", "user.username")
+          .select("users.user_id", "users.username")
 
 }
 
