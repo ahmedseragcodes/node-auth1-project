@@ -2,6 +2,7 @@ const express = require("express");
 const Users = require("../users/users-model");
 const bcrypt = require("bcryptjs");
 const session = require("express-session");
+const { restricted, checkUsernameFree, checkUsernameExists, checkPasswordLength } = require("./auth-middleware");
 
 const router = express.Router();
 
